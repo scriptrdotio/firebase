@@ -19,7 +19,7 @@ The purpose of this connector is to simplify and streamline the way you access F
 
 Require the firebaseclient from a script, then create an instance of the Firebase class.
 ```
-var firebaseModule = require('firebase/firebaseclient');
+var firebaseModule = require('firebase/firebaseclient.js');
 var firebase = new firebaseModule.Firebase();
 ```
 
