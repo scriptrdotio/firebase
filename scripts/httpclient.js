@@ -4,7 +4,7 @@ write=nobody
 execute=authenticated 
   **/ 
  var http = require("http");
-var config = require("firebase/config.js");
+var config = require("./config.js");
 
 /**
  * A generic http client that handles the communication with remote APIs
