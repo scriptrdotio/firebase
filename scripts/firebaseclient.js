@@ -3,19 +3,12 @@
 write=nobody
 execute=authenticated 
   **/ 
- var config = require("./config.js");
-var httpClient = require("./httpclient.js");
+var config = require("./config");
+var httpClient = require("./httpclient");
 
-/**
- * This is the main class to use to interact with Firebase
- * @class Firebase
- * @constructor 
- * @param {Object} [dto]
- * @param {String} [dto.projectName] : your Firebase project name. Optional, defaults to config.projectName
- * defaults to config.apiVersion
- */
 function Firebase(dto) {
   this.projectName = dto && dto.projectName? dto.projectName: config.projectName;
+  this.secret = config.secret;
   
   this.httpClient = new httpClient.HttpClient();
 }
@@ -30,7 +23,9 @@ Firebase.prototype.getData = function(tree) {
   var req = {};
 
   req.url = this.projectName + tree + ".json";
-  req.method = "GET";
+  req.url = req.url + "?auth=" + this.secret;
+  
+  req.method = "GET";  
   
   var response  = this.httpClient.callApi(req);
   if (response.timeout) {
@@ -43,16 +38,42 @@ Firebase.prototype.getData = function(tree) {
   return response;
 };
 
-/**
- * @method putData
- * @param {String} [key] : name of the location to save the data.
- * @param {Object,String} [data] : Object or string to save at key
- */
 Firebase.prototype.putData = function(key, data) {
   var req = {};
 
   req.url = this.projectName + key + ".json";
+  req.url = req.url + "?auth=" + this.secret;
   req.method = "PUT";
+  req.bodyString = JSON.stringify(data);
+  
+  var http = require('http');
+  console.log(JSON.stringify(req));
+  var response  = http.request(req);
+  
+  return response;
+};
+
+Firebase.prototype.patchData = function(key, data) {
+  var req = {};
+
+  req.url = this.projectName + key + ".json";
+  req.url = req.url + "?auth=" + this.secret;
+  req.method = "PATCH";
+  req.bodyString = JSON.stringify(data);
+  
+  var http = require('http');
+  //console.log(JSON.stringify(req));
+  var response  = http.request(req);
+  console.log(JSON.stringify(response));
+  return response;
+};
+
+Firebase.prototype.postData = function(key, data) {
+  var req = {};
+
+  req.url = this.projectName + key + ".json";
+  req.url = req.url + "?auth=" + this.secret;
+  req.method = "POST";
   req.bodyString = JSON.stringify(data);
   
   var response  = this.httpClient.callApi(req);
@@ -64,4 +85,24 @@ Firebase.prototype.putData = function(key, data) {
   }
   
   return response;
-};			
+};
+
+Firebase.prototype.queryData = function(key, query) {
+  var req = {};
+
+  req.url = this.projectName + key + ".json";
+  req.url = req.url + "?auth=" + this.secret;
+  req.url = req.url + "&orderBy=%22" + query.orderBy + "%22";
+  req.url = req.url + "&equalTo=%22" + query.equalTo + "%22";
+  req.method = "GET";
+  
+  var response  = this.httpClient.callApi(req);
+  if (response.timeout) {
+    throw {
+      errorCode: "Invocation_Error",
+      errorDetail: "timeout"
+    }
+  }
+  
+  return response;
+};
